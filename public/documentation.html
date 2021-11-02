@@ -5,13 +5,96 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documentation</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
     <header>
         <h1>Documentation</h1>
     </header>
     <main>
-        <p>This is documentation site.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Request</th>
+                    <th>URL</th>
+                    <th>Response</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+                <tr>
+                    <th>GET</th>
+                    <th>None</th>
+                    <th>/movies</th>
+                    <th>A JSON object holding data about the top movies.</th>
+                </tr>
+                <tr>
+                    <th>GET</th>
+                    <th>None</th>
+                    <th>/movies/:title</th>
+                    <th>A JSON object holding data about the description, genre, director, image URL, and whether it’s featured or not a single movie.</th>
+                </tr>
+                <tr>
+                    <th>GET</th>
+                    <th>None</th>
+                    <th>/genres/:genre</th>
+                    <th>A JSON object holding data about a genre (description) by name/title (e.g., “Thriller”).</th>
+                </tr>
+                <tr>
+                    <th>GET</th>
+                    <th>None</th>
+                    <th>/directors/:director</th>
+                    <th>A JSON object holding data about a director (bio, birth year, death year) by name.</th>
+                </tr>
+                <tr>
+                    <th>POST</th>
+                    <th>A JSON object holding data about a new user to add, structured like this:    
+                    {
+                        "name" : "Frodo Baggins",
+                        "email" : "f.baggins@theShire.net",
+                        "favoriteMovie" : "There and Back Again",
+                        "password" : "leadMe2Mordor!"
+                        }</th>
+                    <th>/register</th>
+                    <th>A JSON object about the user that was just added, including: 
+                        {
+                            "id" : 12345,
+                            "name" : "Frodo Baggins",
+                            "email" : "f.baggins@theShire.net",
+                            "favoriteMovie" : "There and Back Again",
+                            "password" : "leadMe2Mordor!"
+                        }
+                    </th>
+                </tr>
+                <tr>
+                    <th>PUT</th>
+                    <th>None</th>
+                    <th>/accounts/:username/:name?/:email?/:password?</th>
+                    <th>A text message letting the user know their file has been updated.</th>
+                </tr>
+                <tr>
+                    <th>PUT</th>
+                    <th>None</th>
+                    <th>/favoriteMovies/:username/:title</th>
+                    <th>A text message letting the user know their new favorite movie has been added.</th>
+                </tr>
+                <tr>
+                    <th>DELETE</th>
+                    <th>None</th>
+                    <th>/favoriteMovies/:username/:title</th>
+                    <th>A text message letting the user know their movie has been deleted.</th>
+                </tr>
+                <tr>
+                    <th>DELETE</th>
+                    <th>None</th>
+                    <th>/users/:username</th>
+                    <th>A text message letting the user know they have been unregistered.</th>
+                </tr>
+                
+            </tbody>
+            
+        </table>
     </main>
 </body>
 </html>
