@@ -5,6 +5,29 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+const cors = require('cors');
+let allowedOrigins = ['http://localhost:8080', 'http://testsite.com'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1){ // If a specific origin isn’t found on the list of allowed origins
+      let message = 'The CORS policy for this application doesn’t allow access from origin ' + origin;
+      return callback(new Error(message ), false);
+    }
+    return callback(null, true);
+  }
+}));
+
+/* rest of code goes here*/
+//passing the (app) argument here ensures Express is available in auth.js file as well
+let auth = require('./auth')(app);
+const passport = require('passport');
+require('./passport');
+
+const { check, validationResult } = require('express-validator');
+
+
 //logger -> view in terminal
 const morgan = require('morgan');
 app.use(morgan('common'));
@@ -25,7 +48,7 @@ app.get('/', (req, res) => {
 });
 
 //returns all movies
-app.get('/movies', (req, res) => {
+app.get('/movies', passport.authenticate('jwt', { session: false }), (req, res) => {
     Movies.find().then(movies => {
         res.status(201).send(movies);
     }).catch(error => {
@@ -35,7 +58,7 @@ app.get('/movies', (req, res) => {
 })
 
 //get a specific movie
-app.get('/movies/:Title', (req,res) => {
+app.get('/movies/:Title', passport.authenticate('jwt', { session: false }), (req,res) => {
     Movies.findOne({"Title": req.params.Title}).then((movie) => {
         if (movie) {
             res.status(201).json(movie);
@@ -50,7 +73,7 @@ app.get('/movies/:Title', (req,res) => {
 })
 
 //return data about a genre by name/title
-app.get('/genres/:Genre', (req,res) => {
+app.get('/genres/:Genre', passport.authenticate('jwt', { session: false }), (req,res) => {
     Movies.findOne({"Genre.Name": req.params.Genre}, {Genre: 1, _id: 0}).then((genre) => {
         if (genre) {
             console.log(genre);
@@ -66,7 +89,7 @@ app.get('/genres/:Genre', (req,res) => {
 });
 
 //return data about a director
-app.get('/directors/:Director', (req,res) => {
+app.get('/directors/:Director',passport.authenticate('jwt', { session: false }), (req,res) => {
     Movies.findOne({"Director.Name": req.params.Director}, {"Director": 1, "_id": 0}).then((director) => {
         if (director) {
             res.status(201).json(director);
@@ -80,7 +103,19 @@ app.get('/directors/:Director', (req,res) => {
 });
 
 //creates a user
-app.post('/users', (req,res) => {
+app.post('/users', [
+    check('Username', 'Username is required').isLength({min: 5}),
+    check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
+    check('Email', 'Email does not appear to be valid').isEmail()
+], (req,res) => {
+    // check the validation object for errors
+    let errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    let hashedPassword = Users.hashPassword(req.body.Password);
     //checking to see if user already exists..
     Users.findOne({Username: req.body.Username}).then(
         (user) => {
@@ -91,7 +126,7 @@ app.post('/users', (req,res) => {
             } else {
                 Users.create({
                     Username: req.body.Username,
-                    Password: req.body.Password,
+                    Password: hashedPassword,
                     Email: req.body.Email,
                     Birthday: req.body.Birthday
                 }).then(user => {
@@ -109,7 +144,7 @@ app.post('/users', (req,res) => {
 })
 
 //update name of a specific user
-app.put('/users/:Username', (req,res) => {
+app.put('/users/:Username', passport.authenticate('jwt', { session: false }), (req,res) => {
     Users.findOneAndUpdate({Username: req.params.Username},
         {$set: {
             "Username": req.body.Username,
@@ -128,7 +163,7 @@ app.put('/users/:Username', (req,res) => {
 });
 
 //adds a new movie to a specified user
-app.post('/users/:Username/movies/:MovieID', (req,res) => {
+app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), (req,res) => {
     Users.findOneAndUpdate({Username: req.params.Username},
         {$push: {FavoriteMovies: req.params.MovieID}},
         {new: true},
@@ -144,7 +179,7 @@ app.post('/users/:Username/movies/:MovieID', (req,res) => {
 });
 
 //removes a movie from user's favorite movies
-app.put('/users/:Username/movies/:MovieID', (req,res) => {
+app.put('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), (req,res) => {
     Users.findOneAndUpdate({Username: req.params.Username}, 
         {$pull: {FavoriteMovies: req.params.MovieID}},
         {new: true},
@@ -160,7 +195,7 @@ app.put('/users/:Username/movies/:MovieID', (req,res) => {
 })
 
 //deletes a user by username
-app.delete('/users/:Username', (req,res) => {
+app.delete('/users/:Username', passport.authenticate('jwt', { session: false }), (req,res) => {
     Users.findOneAndRemove({Username: req.params.Username}).then( (user) => {
         if (!user) {
             res.status(400).send(req.params.Username + ' was not found.')
@@ -175,7 +210,7 @@ app.delete('/users/:Username', (req,res) => {
 })
 
 //returns all users
-app.get('/users', (req,res)=>{
+app.get('/users', passport.authenticate('jwt', { session: false }), (req,res)=>{
     Users.find().then( (users) => {
         res.status(201).json(users);
     }).catch(error => {
@@ -185,7 +220,7 @@ app.get('/users', (req,res)=>{
 });
 
 //returns data about a specific user
-app.get('/users/:Username', (req,res) => {
+app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (req,res) => {
     Users.findOne({Username: req.params.Username})
     .then(user=> {res.status(201).json(user);})
     .catch(error => {
@@ -193,16 +228,6 @@ app.get('/users/:Username', (req,res) => {
         res.status(500).send('Error' + error);
     })
 })
-
-
-
-
-
-
-
-
-
-
 
 
 //goes into public folder and uses .static on all files in public (documentation.html)
@@ -215,6 +240,8 @@ app.use((err, req, res, next) => {
     res.status(505).send('Something broke!');
 });
   
-app.listen(8080, () => {
-console.log('Your app is listening on port 8080.');
+const port = process.env.PORT || 8080;
+app.listen(port, '0.0.0.0',() => {
+ console.log('Listening on Port ' + port);
 });
+
