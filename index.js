@@ -1,3 +1,8 @@
+//greenDragonDBadmin
+//6MZQS36EENOShGK0
+
+mongoimport --uri mongodb+srv://greenDragonDBadmin:6MZQS36EENOShGK0 @greendragonflix-db.mtnxm.mongodb.net/greenDragonFlixDB --collection movies --type json --file /Users/krishokr/CF_Projects/db-files/gd-movies-db.json
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
@@ -40,7 +45,8 @@ const Models = require('./models.js');
 const Movies = Models.Movie;
 const Users = Models.User;
 
-mongoose.connect('mongodb://localhost:27017/GreenDragonFlix-db', { useNewUrlParser: true, useUnifiedTopology: true });
+// mongoose.connect('mongodb://localhost:27017/GreenDragonFlix-db', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 
 app.get('/', (req, res) => {
