@@ -1,7 +1,6 @@
 //greenDragonDBadmin
 //6MZQS36EENOShGK0
 
-mongoimport --uri mongodb+srv://greenDragonDBadmin:6MZQS36EENOShGK0 @greendragonflix-db.mtnxm.mongodb.net/greenDragonFlixDB --collection movies --type json --file /Users/krishokr/CF_Projects/db-files/gd-movies-db.json
 
 const express = require('express');
 const bodyParser = require('body-parser');
