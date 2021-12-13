@@ -47,7 +47,7 @@ passport.use(new JWTStrategy({
     
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
     //secret used to verify signature of JWT
-    secretOrKey: 'your_jwt_secret'
+    secretOrKey: 'fly_green_movies'
 }, (jwtPayload, callback) => {
     return Users.findById(jwtPayload._id)
         .then((user) => {

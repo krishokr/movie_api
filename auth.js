@@ -1,5 +1,5 @@
 
-const jwtSecret = 'your_jwt_secret';
+const jwtSecret = 'fly_green_movies';
 const { application } = require('express');
 //This has to be the same key used in JWTStrategy
 
