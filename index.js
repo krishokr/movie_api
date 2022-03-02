@@ -11,8 +11,20 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
 const cors = require('cors');
-app.use(cors());
+let allowedOrigins = ['http://localhost:3030','https://greendragonfilms.netlify.app'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) { // If a specific origin isn’t found on the list of allowed origins
+      let message = 'The CORS policy for this application doesn’t allow access from origin ' + origin;
+      return callback(new Error(message), false);
+    }
+    return callback(null, true);
+  }
+}));
 
 
 //Passport.js
@@ -85,12 +97,12 @@ app.post('/users', [
     })
 });
 
-//update Username, Password, Email, and Birthday of a specific user
+// update Username, Password, Email, and Birthday of a specific user
 app.put('/users/:Username', [
     check('Username', 'Username is required').isLength({min: 5}),
     check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
     check('Email', 'Email does not appear to be valid').isEmail(),
-    check('Password', 'Password is required').not().isEmpty()
+check('Password', 'Password is required').not().isEmpty()
 ], passport.authenticate('jwt', { session: false }), (req,res) => {
 
     let errors = validationResult(req);
@@ -186,7 +198,7 @@ app.get('/users', (req,res)=>{
 //returns data about a specific user
 app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (req,res) => {
     Users.findOne({Username: req.params.Username})
-    .then(user=> {res.status(201).json(user);})
+    .then(user=> {res.status(201).json(user)})
     .catch(error => {
         console.error(err);
         res.status(500).send('Error' + error);
@@ -195,7 +207,7 @@ app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (r
 
 //returns all movies
 // passport.authenticate('jwt', { session: false }),
-app.get('/movies', (req, res) => {
+app.get('/movies', passport.authenticate('jwt', { session: false }), (req, res) => {
     Movies.find().then(movies => {
         res.status(201).send(movies);
     }).catch(error => {
