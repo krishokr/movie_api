@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 const cors = require('cors');
-let allowedOrigins = ['http://localhost:3030','https://greendragonfilms.netlify.app'];
+let allowedOrigins = ['http://localhost:3000','https://greendragonfilms.netlify.app'];
 
 app.use(cors({
   origin: (origin, callback) => {
